@@ -1,0 +1,283 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Task Manager</h1>
+          @if (currentUser) {
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ currentUser.name }} ({{ currentUser.role }})
+            </p>
+          }
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <button
+            (click)="toggleTheme()"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            title="Toggle theme"
+          >
+            @if (darkMode) {
+              <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+              </svg>
+            } @else {
+              <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+              </svg>
+            }
+          </button>
+          
+          <button
+            (click)="logout()"
+            class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Controls -->
+    <div class="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+      <div class="flex flex-wrap gap-2">
+        <select
+          [(ngModel)]="filterCategory"
+          (change)="applyFilters()"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="">All Categories</option>
+          <option value="WORK">Work</option>
+          <option value="PERSONAL">Personal</option>
+          <option value="URGENT">Urgent</option>
+          <option value="OTHER">Other</option>
+        </select>
+
+        <select
+          [(ngModel)]="filterStatus"
+          (change)="applyFilters()"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="">All Statuses</option>
+          <option value="TODO">To Do</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="DONE">Done</option>
+        </select>
+      </div>
+
+      <button
+        (click)="showCreateModal = true"
+        class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        New Task
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Tasks</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ allTasks.length }}</p>
+          </div>
+          <div class="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-full">
+            <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">In Progress</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ getTasksByStatus('IN_PROGRESS').length }}</p>
+          </div>
+          <div class="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
+            <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ getTasksByStatus('DONE').length }}</p>
+          </div>
+          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+            <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task Columns (Kanban style) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      @for (status of ['TODO', 'IN_PROGRESS', 'DONE']; track status) {
+        <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+          <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+            @if (status === 'TODO') {
+              <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+              To Do
+            } @else if (status === 'IN_PROGRESS') {
+              <span class="w-3 h-3 bg-yellow-500 rounded-full"></span>
+              In Progress
+            } @else {
+              <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+              Done
+            }
+            <span class="ml-auto text-sm text-gray-500">({{ getTasksByStatus(status).length }})</span>
+          </h3>
+
+          <div
+            class="space-y-3 min-h-[200px]"
+            (dragover)="onDragOver($event, status)"
+            (drop)="onDrop($event, status)"
+          >
+            @for (task of getTasksByStatus(status); track task.id) {
+              <div
+                draggable="true"
+                (dragstart)="onDragStart($event, task)"
+                (dragend)="onDragEnd($event)"
+                class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-move border-l-4"
+                [class.border-blue-500]="task.category === 'WORK'"
+                [class.border-purple-500]="task.category === 'PERSONAL'"
+                [class.border-red-500]="task.category === 'URGENT'"
+                [class.border-gray-500]="task.category === 'OTHER'"
+              >
+                <div class="flex justify-between items-start mb-2">
+                  <h4 class="font-medium text-gray-900 dark:text-white">{{ task.title }}</h4>
+                  <div class="flex gap-1">
+                    <button
+                      (click)="editTask(task)"
+                      class="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
+                      title="Edit"
+                    >
+                      <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                    </button>
+                    <button
+                      (click)="deleteTask(task)"
+                      class="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                      title="Delete"
+                    >
+                      <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ task.description }}</p>
+                <div class="flex items-center gap-2">
+                  <span 
+                    class="px-2 py-1 text-xs rounded-full"
+                    [ngClass]="{
+                      'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300': task.category === 'WORK',
+                      'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300': task.category === 'PERSONAL',
+                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300': task.category === 'URGENT',
+                      'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300': task.category === 'OTHER'
+                    }"
+                  >
+                    {{ task.category }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </main>
+
+  <!-- Create/Edit Task Modal -->
+  @if (showCreateModal || editingTask) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" (click)="closeModal()">
+      <div class="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6" (click)="$event.stopPropagation()">
+        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+          {{ editingTask ? 'Edit Task' : 'Create New Task' }}
+        </h2>
+        
+        <form [formGroup]="taskForm" (ngSubmit)="saveTask()">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+              <input
+                type="text"
+                formControlName="title"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter task title"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+              <textarea
+                formControlName="description"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter task description"
+              ></textarea>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+              <select
+                formControlName="category"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="WORK">Work</option>
+                <option value="PERSONAL">Personal</option>
+                <option value="URGENT">Urgent</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+              <select
+                formControlName="status"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="TODO">To Do</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="DONE">Done</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="mt-6 flex gap-3">
+            <button
+              type="button"
+              (click)="closeModal()"
+              class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="!taskForm.valid"
+              class="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50"
+            >
+              {{ editingTask ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
